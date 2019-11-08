@@ -289,7 +289,11 @@ int main()
 
 	struct Node* tempnode2 = NULL;
 	char* userinputcity = "sEattle";
+
 	char* userinputstate = "WA";
+	char* cityLowerCase = lower(userinputcity);
+
+
 	//get user input
 	char *userinput = concatAndLowercase(userinputcity, userinputstate);
 	printf("user input: %s\n", userinput);
