@@ -59,8 +59,8 @@ struct TrieNode
 	// isWordEnd is true if the node represents
 	// end of a word
 	bool isWordEnd;
-	char state[STATELENGTH];
-	char* city[CITYLENGTH];
+	char* state;
+	char* city;
 };
 
 
@@ -76,8 +76,8 @@ struct TrieNode* getNode(void)
 	pNode->isWordEnd = false;
 	pNode->lat = 0;
 	pNode->lon = 0;
-	pNode->state[0] = '\0';
-	pNode->city[0] = '\0';
+	pNode->state = '\0';
+	pNode->city = '\0';
 
 	for (int i = 0; i < ALPHABET_SIZE; i++)
 		pNode->children[i] = NULL;
@@ -92,7 +92,6 @@ void insert(struct TrieNode* root, char key[], double lat, double lon, int d, ch
 {
 	struct TrieNode* pCrawl = root;
 	pCrawl = (struct TrieNode*)put(pCrawl, key, lat, lon, 0, state, city);
-	//printf("Inside insert:\ncity is %s, state is %s, lat is %f, lon is %f\n", city, state, lat, lon);
 }
 
 
@@ -126,7 +125,7 @@ int buildTrie(struct TrieNode* root)
 	double lat, lon;
 	char line[LINELENGTH], state[STATELENGTH + 1], name[CITYLENGTH + 1], lats[LATLENGTH + 1], lons[LONLENGTH + 1];
 	char* key;
-	char* city;
+	char city[CITYLENGTH];
 	//open file
 	if((file = fopen(FILENAME, "r")) == NULL)
 	{
@@ -148,10 +147,8 @@ int buildTrie(struct TrieNode* root)
 
 			//read name
 			strncpy(name, strdup(line + 9), CITYLENGTH);
-//			char *nametemp;
-//			nametemp = strtok(name, '\t');
 			name[CITYLENGTH] = '\0';
-			city = ltrim(name);
+			strncpy(city, strdup(ltrim(name)), CITYLENGTH);
 
 
 			//concat state and name as a key, lower case
@@ -170,13 +167,6 @@ int buildTrie(struct TrieNode* root)
 
 			//add to the trie
 			insert(root, key, lat, lon, 0, state, city);
-
-//			//for debugging
-//			if(count == 5)
-//			{
-//				printf("city is %s, state is %s, lat is %f, lon is %f\n", name, state, lat, lon);
-//			}
-
 		}
 		else
 		{
@@ -194,15 +184,12 @@ static void collect(struct TrieNode* x, char prefix[], struct Node* head)
 	{
 		return;
 	}
-	//int size = strlen(prefix);
 	int index;
 	if (x->state != NULL)
 	{
 
 		if(x->isWordEnd){
-			//printf("prefix is %s\n", prefix);
 			push(head, prefix, x->state, x->city, x->lat, x->lon);
-//			printf("city is %s, state is %s, lat is %f, lon is %f\n", x->city, x->state, x->lat, x->lon);
 		}
 	}
 	for (index = 0; index < ALPHABET_SIZE; index++) {
@@ -228,14 +215,8 @@ static struct TrieNode* put(struct TrieNode* x, char key[], double lat, double l
 		x->lat = lat;
 		x->lon = lon;
 		x->isWordEnd = true;
-//		printf("Inside put before copy:\ncity is %s, state is %s, lat is %f, lon is %f\n", city, state, lat, lon);
-		//need to test if this works
-//		strcpy(x->state, state);
-//		strcpy(x->city, city);
-		strncpy(x->state, strdup(state), STATELENGTH);
-		strcpy(x->city, city);
-		//for debugging
-//		printf("Inside put:\ncity is %s, state is %s, lat is %f, lon is %f\n", x->city, x->state, x->lat, x->lon);
+		x->city = strdup(city);
+		x->state = strdup(state);
 		return (struct TrieNode*)x;
 	}
 	//go to the next node
@@ -338,9 +319,8 @@ int main()
 	struct TrieNode* root = getNode();
 	//build trie tree
 	buildTrie(root);
-	char* userinputcity = "sEattle city";
-	char* userinputstate = "WA";
-
+	char* userinputcity = "sea";
+	char* userinputstate = "Ny";
 
 
 	//get user input
@@ -360,18 +340,9 @@ int main()
 
 	//check result size
 	int size = sizeOfResult(tempnode2);
-//	struct Node* tempnode3 = NULL;
-//	tempnode3 = (struct Node*)malloc(sizeof(struct Node));
-//	tempnode3 = tempnode2;
-//	while(tempnode3->next !=NULL )
-//	{
-//		size++;
-//		tempnode3 = tempnode3->next;
-//	}
 	printf("result number is : %i\n", size);
-
-	if(!tempnode2){
-		printf("No search result\n");
+	if(size == 0){
+		printf("No result found\n");
 	}else if(size == 1){
 		printf("place is %s, state is %s,lat is %f, lon is %f\n", tempnode2->next->city, tempnode2->next->state, tempnode2->next->lat, tempnode2->next->lon);
 	}else{
@@ -379,8 +350,5 @@ int main()
 
 		print_list(tempnode2);
 	}
-
-//	print_list(tempnode2);
-
 	return 0;
 }
