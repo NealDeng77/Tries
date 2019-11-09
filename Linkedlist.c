@@ -16,7 +16,7 @@ void print_list(node_t * head) {
     node_t * current = head->next;
 
     while (current != NULL) {
-        printf("state is %s, lat is %f, lon is %f\n", current->state, current->lat, current->lon);
+        printf("city is %s, state is %s, lat is %f, lon is %f\n", current->city, current->state, current->lat, current->lon);
         current = current->next;
     }
 }
